@@ -30,6 +30,7 @@ namespace SDAI
 #define RECURRENT_PERF_MODE						PERF_MEDIAN
 #define RESHAPE_PERF_MODE						PERF_HIGH
 #define UTILS_PERF_MODE							PERF_HIGH
+#define BATCHNORM2D_PERF_MODE                   PERF_HIGH
 
 /*
  * @note: configure the memory optimization method for AXI master interface
@@ -42,6 +43,7 @@ namespace SDAI
 #define POOLING1D_OPT_MODE						OPT_NONE
 #define CONVOLUTION2D_OPT_MODE					OPT_MEM
 #define POOLING2D_OPT_MODE						OPT_MEM
+#define BATCHNORM2D_OPT_MODE                    OPT_MEM
 
 /*
  * @note: the Debug switch
