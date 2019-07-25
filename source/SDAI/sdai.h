@@ -19,5 +19,6 @@
 #include "../SDAI/utils.h"
 #include "../SDAI/normalization.h"
 #include "../SDAI/upsample2d.hpp"
+#include "../SDAI/concat.hpp"
 
 #endif

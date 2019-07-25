@@ -45,5 +45,5 @@ class Upsampling2d_DataStream{
             }
             // TODO: optimize upsampling2d
         }
-}
+};
 }
