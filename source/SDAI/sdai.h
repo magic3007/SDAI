@@ -18,5 +18,6 @@
 #include "../SDAI/reshape.h"
 #include "../SDAI/utils.h"
 #include "../SDAI/normalization.h"
+#include "../SDAI/upsample2d.hpp"
 
 #endif

@@ -17,7 +17,7 @@ class BatchNorm2d{
         TYPE_T scales[NB_FILTER];
         TYPE_T bias[NB_FILTER];
         TYPE_T means[NB_FILTER];
-        TYPE_T reci_var2_eps[NB_FILTER]; //  \frac{1}{variance + \epsilon}
+        TYPE_T reci_var2_eps[NB_FILTER]; //  \frac{1}{\sqrt{variance + \epsilon}}
 
         BatchNorm2d_DataStream(const TYPE_T *SCALES, const TYPE_T *BIAS, 
             const TYPE_T *MEANS, const TYPE_T *VARS, const float EPSILON=.000001f){
@@ -31,8 +31,8 @@ class BatchNorm2d{
             for (int i= 0; i < NB_FILTER; i++)
                 means[i] = MEANS[i];
             for (int i = 0; i < NB_FILTER; i++)
-                reci_var2_eps[i] = (TYPE_T)(1. / (double(VARS[i]) + EPSILON) );
-            // TODO: calculate \frac{1}{variance + \epsilon} in CPU ? 
+                reci_var2_eps[i] = (TYPE_T)(1. / sqrt(double(VARS[i]) + EPSILON) );
+            // TODO: calculate \frac{1}{\sqrt{variance + \epsilon}} in CPU
         }
 
         inline TYPE_T forward(TYPE_T x, int k){

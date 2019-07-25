@@ -59,6 +59,7 @@ typedef			float						TYPE_T;
 //typedef		ap_fixed<15, 6, AP_TRN_ZERO>	TYPE_T;
 //typedef		ap_fixed<20, 12, AP_TRN_ZERO>	TYPE_T;
 
+#define         TYPE_T_MAX                  FLT_MAX;
 
 }
 #endif
