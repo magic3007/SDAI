@@ -86,7 +86,8 @@ public:
 /*
  * @note: 2D Maximum Pooling layer, normally used after Convolution2D layer
  */
-template<int ROW, int COL, int NB, int POOL_ROW = 2, int POOL_COL = 2, int OUT_ROW = ROW/POOL_ROW, int OUT_COL = COL/POOL_COL>
+template<int ROW, int COL, int NB, int POOL_ROW = 2, int POOL_COL = 2, int STRIDE_ROW = 2, int STRIDE_COL = 2, int PADDING = 0,
+	int OUT_ROW = (ROW + PADDING - POOL_ROW) / STRIDE_ROW + 1, int OUT_COL = (COL + PADDING - POOL_COL) / STRIDE_COL + 1 > 
 class MaxPooling2D_Stream
 {
 public:
@@ -94,15 +95,11 @@ public:
 	{
 		assert(OUT_ROW > 0);
 		assert(OUT_COL > 0);
+		assert(STRIDE_ROW <= POOL_ROW);
+		assert(STRIDE_COL <= POOL_COL);
 #if DEBUG
-		cout<<"MaxPooling2D_Stream Layer......"<<endl;
-		cout<<"\tROW = " << ROW << endl;
-		cout<<"\tCOL = " << COL << endl;
-		cout<<"\tNB = " << NB << endl;
-		cout<<"\tPOOL_ROW = " << POOL_ROW << endl;
-		cout<<"\tPOOL_COL = " << POOL_COL << endl;
-		cout<<"\tOUT_ROW = " << OUT_ROW << endl;
-		cout<<"\tOUT_COL = " << OUT_COL << endl;
+		fprintf(stderr, "maxpool2d          %d x %d/(%d, %d)  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", POOL_ROW, POOL_COL, STRIDE_ROW, STRIDE_COL, 
+			ROW, COL, NB, OUT_ROW, OUT_COL, NB);
 #endif
 	}
 public:
@@ -128,11 +125,14 @@ public:
 		Reshape_Stream_3D<POOL_ROW, COL, NB>	stream;
 
 #endif
-
+		for(int i = 0; i < POOL_ROW - STRIDE_ROW; i++){
+#pragma HLS pipeline
+			stream.feedforwardRow<POOL_ROW, ROW>(data, i, -FLT_MAX);
+		}
 		MAXPOOLING2D: for (int row = 0; row < OUT_ROW; row++)
 		{
 #if POOLING2D_OPT_MODE == OPT_BUFFER
-			/* update the 3D LineBuffer*/
+	/* update the 3D LineBuffer*/
 			if( row > 0 && row < OUT_ROW)
 			{
 				l_buffer.shift_up();
@@ -141,13 +141,18 @@ public:
 			}
 
 #elif POOLING2D_OPT_MODE == OPT_MEM
-			/*copy data from AXI master to local BRAM */
-			stream.feedforward(&data[(row * POOL_ROW ) * COL * NB]);
 
+			int src_row = row * STRIDE_ROW;
+
+			/*copy data from AXI master to local BRAM */
+			for(int i = src_row + POOL_ROW - STRIDE_ROW; i < src_row + POOL_ROW; i++){
+				stream.feedforwardRow<POOL_ROW, ROW>(data, i, -FLT_MAX);
+			}
 #endif
 
 			for (int col = 0; col < OUT_COL; col++)
 			{
+				int src_col = col * STRIDE_COL;
 #if POOLING2D_PERF_MODE == PERF_HIGH
 #pragma HLS pipeline
 #endif
@@ -174,7 +179,7 @@ public:
 #if POOLING2D_OPT_MODE == OPT_BUFFER
 					TYPE_T max = w_buffer.getval(0, 0, k);
 #elif POOLING2D_OPT_MODE == OPT_MEM
-					TYPE_T max = stream.res[0][col * POOL_COL][k];
+					TYPE_T max = stream.res[0][src_col][k];
 #else
 					TYPE_T max = data[(row * POOL_ROW ) * COL * NB + (col * POOL_COL) * NB + k];
 #endif
@@ -189,7 +194,7 @@ public:
 #if POOLING2D_OPT_MODE == OPT_BUFFER
 							TYPE_T v = w_buffer.getval(i, j, k);
 #elif POOLING2D_OPT_MODE == OPT_MEM
-							TYPE_T v = stream.res[i][col * POOL_COL + j][k];
+							TYPE_T v = stream.res[i][src_col + j][k];
 #else
 							TYPE_T v = data[(row * POOL_ROW + i) * COL * NB + (col * POOL_COL + j) * NB + k];
 #endif
@@ -203,6 +208,7 @@ public:
 		}
 	}
 };
+
 
 
 /*
