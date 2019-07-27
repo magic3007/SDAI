@@ -22,6 +22,9 @@ class Concat_DataStream{
             for(int i = 1; i < N_MAPS; i++)
                 offsets[i] = offsets[i-1] + dims[i];
             OUT_DIM = offsets[N_MAPS - 1] + dims[N_MAPS - 1];
+#if DEBUG
+            fprintf(stderr, "concat -> %d x %d x %d", ROW, COL, OUTPUT_DIM);
+#endif
         }
 
         inline void array_copy(volatile TYPE_T *psrc, volatile TYPE_T *pdst, int len){

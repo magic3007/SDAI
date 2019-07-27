@@ -137,9 +137,8 @@ void activation_softmax(TYPE_T in[OUTPUT_DIM])
 /*
  * @note: the LeakyRelU
  */
-inline TYPE_T activation_leakyrelu(TYPE_T x)
+inline TYPE_T activation_leakyrelu(TYPE_T x, TYPE_T alpha = 0.1)
 {
-	const TYPE_T alpha = 0.3;
 	if( x < 0.0)
 		return alpha * x;
 	else
